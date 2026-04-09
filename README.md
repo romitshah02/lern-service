@@ -1,99 +1,145 @@
-# Lern Service
+# Sunbird Lern Service
 
-The **Lern Service** is a unified, scalable platform component that integrates core learning functionalities, user organization management, and notification services into a single deployable unit. This repository supports building both a monolithic "merged" service and individual microservices.
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Target](https://img.shields.io/badge/Target-Java%2011-orange.svg)](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
+[![Framework](https://img.shields.io/badge/Framework-Play%203.0.5-green.svg)](https://www.playframework.com/)
 
-## Project Overview
-
-This project consolidates the following services:
-- **Lern Service (Merged)**: A single service combining all functionalities (LMS, UserOrg, Notification).
-- **LMS Service**: Learning Management System capabilities.
-- **UserOrg Service**: User and Organization management.
-- **Notification Service**: System notifications and alerts.
-
-## Prerequisites
-
-Ensure you have the following installed:
-- **Java 11**: Required for building the project.
-- **Maven 3.6+**: Build tool.
-- **Docker**: For building and running containerized images.
+Sunbird Lern is an enterprise-grade learning infrastructure service designed for high-scale educational ecosystems. It serves as the authoritative engine for managing user identities, orchestrating structured learning journeys, and facilitating data-driven educational workflows within the Sunbird platform.
 
 ---
 
-## Building the Merged Service (Recommended)
+## Core Capabilities
 
-The merged service is the primary deployment artifact, combining all modules for streamlined operations.
+The service provides a comprehensive suite of capabilities categorized into three functional domains:
 
-### 1. Build the Artifact
-Run the build script to compile all modules and create the distribution artifact:
+### 1. Identity & Organization Management (UserOrg)
+*   **Identity Lifecycle:** End-to-end management of user accounts, including self-signup, managed users, and bulk onboarding.
+*   **Authentication & SSO:** Native support for OpenID Connect (OIDC), Google SSO, and federated identity providers.
+*   **RBAC & Governance:** Granular Role-Based Access Control (RBAC) across complex organizational hierarchies and multi-tenant environments.
 
-```bash
-./scripts/lern/build.sh
-```
+### 2. Learning Management (LMS)
+*   **Batch Orchestration:** Lifecycle management of course batches (Invite-only, Open, and Private) with automated enrollment workflows.
+*   **Progress & Tracking:** Real-time tracking of content consumption, assessment scores, and competency-based progress.
+*   **Credentialing:** Rule-based engine for the automated generation and issuance of digital certificates and micro-credentials.
 
-**Options:**
-- `-t` or `--tests`: Run unit tests during the build (default: skipped).
-
-**Output:**
-- The distribution artifact will be created at: `modules/lern/service/target/lern-service-impl-1.0-SNAPSHOT-dist.zip`
-
-### 2. Build and Push Docker Image
-Create a Docker image from the built artifact:
-
-```bash
-./scripts/lern/docker-build-push.sh -r <your-docker-repo> -t <tag>
-```
-
-**Options:**
-- `-r`, `--repo`: Docker repository (e.g., `sunbird`).
-- `-n`, `--name`: Image name (default: `lern-service`).
-- `-t`, `--tag`: Image tag (default: `latest`).
-- `-p`, `--push`: Push the image to the registry after building.
-
-**Example:**
-```bash
-./scripts/lern/docker-build-push.sh -r sunbird -t v1.0.0
-```
+### 3. Notification Engine
+*   **Multi-Channel Delivery:** Orchestrated delivery of notifications via Email, SMS (via external gateways), and In-App Activity Feeds.
+*   **Template Management:** Dynamic, localized template engine for transactional and engagement-based communications.
 
 ---
 
-## Building Individual Services
+## Architectural Overview
 
-If you need to deploy specific components independently, use the following scripts.
+Sunbird Lern implements a **Unified Service Architecture**, providing deployment flexibility to match varying infrastructure requirements:
 
-### UserOrg Service
-```bash
-./scripts/userorg/build.sh
-# Check modules/userorg/controller/target/ for the distribution
-```
+*   **Consolidated Deployment (Monolithic):** Integrates all functional modules into a single execution unit for simplified operations, reduced latency, and optimized resource utilization.
+*   **Distributed Architecture (Microservices):** Supports the independent deployment of functional modules as standalone microservices to facilitate granular scaling and fault isolation in high-traffic environments.
 
-### LMS Service
-```bash
-./scripts/lms/build.sh
-# Check modules/lms/service/target/ for the distribution
-```
+---
 
-### Notification Service
-```bash
-./scripts/notification/build.sh
-# Check modules/notification/service/target/ for the distribution
-```
+## Technical Specification
+
+The platform is engineered using a reactive, non-blocking stack to ensure maximum throughput and resilience:
+
+*   **Runtime Environment:** Java 11 (Long Term Support)
+*   **Web Engine:** Play Framework 3.0.5
+*   **Reactive Core:** Apache Pekko 1.0.3 (Distributed Actor System)
+*   **Language Support:** Scala 2.13.12
+*   **Build System:** Maven 3.6.0+
+*   **Data Infrastructure:** 
+    *   **YugabyteDB:** Distributed SQL database accessed via high-performance **Cassandra drivers**.
+    *   **Elasticsearch:** Distributed search and analytics engine for discovery and indexing.
+    *   **Redis:** Optional distributed cache for accelerated data retrieval.
+*   **Build Orchestration:** Maven 3.6.0+
+
+---
+
+## Infrastructure & Multi-Cloud Support
+
+Designed for cloud neutrality, the service includes native adapters for all major Cloud Storage Providers (CSP):
+*   **Microsoft Azure** (Default storage provider)
+*   **Amazon Web Services** (S3 Integration)
+*   **Google Cloud Platform** (GCS Integration)
+*   **Oracle Cloud Infrastructure** (OCI Object Storage)
+
+---
+
+## System Dependencies & External Integrations
+
+To operate at scale, Sunbird Lern requires integration with several infrastructure components and ecosystem services. These are typically configured via environment variables.
+
+For a comprehensive list of required configuration keys and a shell-compatible template, please refer to:
+**[Environment Variables Template (scripts/env-variables.example)](scripts/env-variables.example)**
+
+### Infrastructure Components
+*   **Primary Persistence:** 
+    *   **YugabyteDB:** Distributed SQL database (accessed via Cassandra drivers on port 9042 and Postgres drivers on port 5433).
+    *   **Elasticsearch:** Distributed search engine (default port 9200) for indexing and discovery.
+*   **Message Broker:** **Apache Kafka** (default port 9092) for asynchronous event processing, telemetry, and certificate issuance requests.
+*   **Identity Provider:** **Keycloak** (SSO) for secure authentication and token management.
+*   **Object Storage:** **Cloud Storage** (Azure Blob Storage, AWS S3, GCP, or OCI) for storing assets, dials, and certificates.
+*   **Caching:** **Redis** (Optional) for performance optimization.
+*   **Communication:** **SMTP Server** (e.g., SendGrid) for dispatching email notifications.
+
+### Ecosystem Dependencies
+The service interacts with several other Sunbird platform components:
+*   **Content & Learning Services:** For course and content metadata retrieval.
+*   **Search Service:** For advanced cross-component search capabilities.
+*   **Certificate & Dial Services:** For credential management and QR code orchestration.
+*   **Telemetry Service:** For platform-wide usage analytics and observation.
+
+---
+
+## Getting Started
+
+### Prerequisites
+*   JDK 11
+*   Maven 3.6.0+
+*   Docker (Optional, for containerized deployment)
+
+### Developer Quick Reference
+
+| Objective | Command |
+| :--- | :--- |
+| **Standard Build** | `./scripts/build-local.sh --service lern` |
+| **Clean Install** | `mvn clean install -P lern -DskipTests` |
+| **Local Execution** | `mvn play2:run` (Execute within `modules/lern/service`) |
+| **Packaging** | `mvn play2:dist` |
+
+For exhaustive technical documentation, build parameters, and deployment strategies, please consult the:
+**[Official Build & Deployment Guide](scripts/README.md)**
 
 ---
 
 ## Project Structure
 
-```
-├── core/                   # Shared utilities (Platform, Cassandra, ES, etc.)
-├── modules/
-│   ├── lern/               # Merged service implementation
-│   ├── lms/                # LMS specific modules
-│   ├── userorg/            # User & Organization modules
-│   └── notification/       # Notification modules
-├── scripts/                # Build and deployment scripts
-│   ├── lern/
-│   ├── lms/
-│   ├── userorg/
-│   └── notification/
-├── build/                  # Dockerfiles for each service
-└── pom.xml                 # Root Maven configuration
-```
+The repository is organized into four main functional areas:
+
+### Core (/core)
+The foundation of the platform, containing shared libraries and data access adapters:
+*   `sunbird-actor-utils`: Common abstractions for Pekko/Akka Actor management.
+*   `sunbird-cassandra-utils`: Data access layer for YugabyteDB/Cassandra.
+*   `sunbird-es-utils`: Integration layer for Elasticsearch indexing and search.
+*   `sunbird-redis-utils`: Caching utilities for Redis.
+*   `sunbird-platform-common`: Shared utility classes, exception handling, and telemetry.
+
+### Modules (/modules)
+Independent functional components and the unified service implementation:
+*   `lern/`: The **Unified Service** that merges all functionalities into a single deployable unit.
+*   `lms/`: Learning Management System logic, including course batches and enrollment.
+*   `userorg/`: Identity and Organization management services.
+*   `notification/`: Notification engine and template management.
+
+### Build & Deployment (/build, /scripts)
+Resources for automation and containerization:
+*   `build/`: Service-specific **Dockerfiles** and environment configurations.
+*   `scripts/`: Centralized orchestration for builds, tests, and Docker image generation.
+
+### Reporting
+*   `lern-jacoco-report/`: Consolidated code coverage reports across all modules.
+
+---
+
+## License
+
+This project is licensed under the **MIT License**. For more information, please see the [LICENSE](LICENSE) file.
