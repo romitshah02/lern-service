@@ -4,142 +4,287 @@
 [![Target](https://img.shields.io/badge/Target-Java%2011-orange.svg)](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
 [![Framework](https://img.shields.io/badge/Framework-Play%203.0.5-green.svg)](https://www.playframework.com/)
 
+Sunbird Lern is a comprehensive Play Framework service for learning infrastructure. It provides REST APIs for managing user identities, learning workflows, and notifications within the Sunbird ecosystem. The service integrates with YugabyteDB, Elasticsearch, Kafka, and Redis to deliver high-scale educational capabilities.
+
+---
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Key Modules](#key-modules)
+3. [Core Capabilities](#core-capabilities)
+4. [Technical Stack](#technical-stack)
+5. [Prerequisites](#prerequisites)
+6. [Local Development Setup](#local-development-setup)
+7. [Optional Features](#optional-features)
+8. [System Dependencies](#system-dependencies--external-integrations)
+
+---
+
+## Overview
+
 Sunbird Lern is an enterprise-grade learning infrastructure service designed for high-scale educational ecosystems. It serves as the authoritative engine for managing user identities, orchestrating structured learning journeys, and facilitating data-driven educational workflows within the Sunbird platform.
+
+The service is deployed as part of the **learnbb** umbrella Helm chart, which coordinates Lern alongside supporting infrastructure including Redis caching, Elasticsearch search, Kafka messaging, and YugabyteDB persistence.
+
+---
+
+## Key Modules
+
+The service is composed of four primary functional modules:
+
+| Module | Description |
+| :--- | :--- |
+| **UserOrg** | Identity and Organization management — SSO, RBAC, managed users, bulk onboarding. |
+| **LMS** | Learning Management — course batches, enrollment, progress tracking, competency assessment. |
+| **Notification** | Multi-channel communication — Email, in-app feeds, SMS triggers with dynamic templating. |
+| **Lern Service** | Unified aggregator bundling UserOrg, LMS, and Notification into a single runtime. |
+
+Shared abstractions across modules reside in **core**: telemetry, Pekko actors, database drivers, and Elasticsearch utilities.
 
 ---
 
 ## Core Capabilities
 
-The service provides a comprehensive suite of capabilities categorized into three functional domains:
-
 ### 1. Identity & Organization Management (UserOrg)
 *   **Identity Lifecycle:** End-to-end management of user accounts, including self-signup, managed users, and bulk onboarding.
 *   **Authentication & SSO:** Native support for OpenID Connect (OIDC), Google SSO, and federated identity providers.
-*   **RBAC & Governance:** Granular Role-Based Access Control (RBAC) across complex organizational hierarchies and multi-tenant environments.
+*   **RBAC & Governance:** Granular Role-Based Access Control (RBAC) across complex organizational hierarchies.
 
 ### 2. Learning Management (LMS)
-*   **Batch Orchestration:** Lifecycle management of course batches (Invite-only, Open, and Private) with automated enrollment workflows.
-*   **Progress & Tracking:** Real-time tracking of content consumption, assessment scores, and competency-based progress.
-*   **Credentialing:** Rule-based engine for the automated generation and issuance of digital certificates and micro-credentials.
+*   **Batch Orchestration:** Lifecycle management of course batches (Invite-only, Open, and Private).
+*   **Progress & Tracking:** Real-time tracking of content consumption and competency-based progress.
+*   **Credentialing:** Rule-based engine for automated generation and issuance of digital certificates.
 
 ### 3. Notification Engine
-*   **Multi-Channel Delivery:** Orchestrated delivery of notifications via Email, SMS (via external gateways), and In-App Activity Feeds.
-*   **Template Management:** Dynamic, localized template engine for transactional and engagement-based communications.
+*   **Multi-Channel Delivery:** Orchestrated delivery via Email, SMS, and In-App Activity Feeds.
+*   **Template Management:** Dynamic, localized template engine for transactional communications.
 
 ---
 
-## Architectural Overview
+## Technical Stack
 
-Sunbird Lern implements a **Unified Service Architecture**, providing deployment flexibility to match varying infrastructure requirements:
+Lern is engineered using a reactive, non-blocking architecture:
 
-*   **Consolidated Deployment (Monolithic):** Integrates all functional modules into a single execution unit for simplified operations, reduced latency, and optimized resource utilization.
-*   **Distributed Architecture (Microservices):** Supports the independent deployment of functional modules as standalone microservices to facilitate granular scaling and fault isolation in high-traffic environments.
-
----
-
-## Technical Specification
-
-The platform is engineered using a reactive, non-blocking stack to ensure maximum throughput and resilience:
-
-*   **Runtime Environment:** Java 11 (Long Term Support)
+*   **Runtime:** Java 11 (LTS), Scala 2.13.12
 *   **Web Engine:** Play Framework 3.0.5
 *   **Reactive Core:** Apache Pekko 1.0.3 (Distributed Actor System)
-*   **Language Support:** Scala 2.13.12
-*   **Build System:** Maven 3.6.0+
-*   **Data Infrastructure:** 
-    *   **YugabyteDB:** Distributed SQL database accessed via high-performance **Cassandra drivers**.
-    *   **Elasticsearch:** Distributed search and analytics engine for discovery and indexing.
-    *   **Redis:** Optional distributed cache for accelerated data retrieval.
-*   **Build Orchestration:** Maven 3.6.0+
+*   **Data Persistence:** 
+    *   **YugabyteDB:** Dual-driver architecture — Cassandra (9042) for document stores, Postgres (5433) for relational data.
+    *   **Elasticsearch:** Distributed full-text search engine (9200).
+    *   **Redis:** Optional distributed cache layer.
+*   **Messaging:** Apache Kafka (9092) for event-driven workflows and notification dispatch.
+*   **Build System:** Maven 3.8.0+
 
 ---
 
-## Infrastructure & Multi-Cloud Support
+## Prerequisites
 
-Designed for cloud neutrality, the service includes native adapters for all major Cloud Storage Providers (CSP):
-*   **Microsoft Azure** (Default storage provider)
-*   **Amazon Web Services** (S3 Integration)
-*   **Google Cloud Platform** (GCS Integration)
-*   **Oracle Cloud Infrastructure** (OCI Object Storage)
+Ensure the following are installed and verified:
+*   **Java 11** — `java -version`
+*   **Maven 3.8.0+** — `mvn -version`
+*   **Docker Desktop** — `docker --version` (6GB RAM minimum recommended)
+*   **Git** — `git --version`
+
+---
+
+## Local Development Setup
+
+### Step 1 — Clone the Repository
+```bash
+git clone https://github.com/sunbird-lern/lern-service.git
+cd lern-service
+```
+
+### Step 2 — Start Infrastructure
+Spin up YugabyteDB, Elasticsearch, and Kafka using Docker Compose:
+```bash
+docker-compose up -d
+docker-compose ps
+```
+Wait up to 60 seconds for all services to be fully ready, then verify all show `Up` status before proceeding.
+
+### Step 2a — Initialize Database & Elasticsearch
+
+Run these once after the containers are up for the first time. They pull migration scripts from external repos and apply them to your local instances.
+
+**YugabyteDB schema migrations:**
+```bash
+chmod +x init-yugabyte.sh
+./init-yugabyte.sh
+```
+
+**Elasticsearch index setup:**
+```bash
+chmod +x init-elasticsearch.sh
+./init-elasticsearch.sh
+```
+
+> These scripts require Docker to be running with the `yugabyte` and `sunbird_es` containers healthy. You only need to run them once — re-running on an already-initialized instance is safe.
+
+### Step 3 — Configure Environment
+Copy the template, fill in your values, and source it:
+```bash
+cp scripts/env-variables.example .env
+source .env
+```
+Edit `.env` with your local credentials before sourcing.
+
+The service reads all configuration from environment variables at startup. They must be sourced in the **same terminal session** before starting the service. Key variables to verify:
+
+Elasticsearch — these must be **lowercase**:
+```bash
+sunbird_es_host="localhost"
+sunbird_es_port="9200"
+sunbird_es_cluster="sunbird"
+```
+
+YugabyteDB:
+```bash
+SUNBIRD_CASSANDRA_HOST="localhost"
+SUNBIRD_CASSANDRA_PORT="9042"
+SUNBIRD_POSTGRES_HOST="localhost"
+SUNBIRD_POSTGRES_PORT="5433"
+```
+
+Kafka:
+```bash
+SUNBIRD_KAFKA_URL="localhost:9092"
+```
+
+### Step 4 — Build the Project
+Run the unified build script (recommended):
+```bash
+./scripts/build-local.sh --service lern
+```
+> For all build options (CSP, running tests, building other services), see [scripts/README.md](scripts/README.md).
+
+Or build manually:
+```bash
+mvn clean install -DskipTests -P lern
+cd modules/lern/service
+mvn play2:dist
+```
+
+### Step 5 — Run the Service
+
+**On Linux:**
+```bash
+cd modules/lern/service
+mvn play2:run
+```
+
+**On macOS** — Netty's native transport (epoll) is Linux-only. Two changes are required:
+
+**1. Change `transport` in all four module configs** from `"native"` to `"jdk"`:
+- [modules/lern/service/conf/application.conf](modules/lern/service/conf/application.conf)
+- [modules/lms/service/conf/application.conf](modules/lms/service/conf/application.conf)
+- [modules/notification/service/conf/application.conf](modules/notification/service/conf/application.conf)
+- [modules/userorg/controller/conf/application.conf](modules/userorg/controller/conf/application.conf)
+
+**2. Run via the built distribution** (the Play2 Maven plugin's file watcher fails on macOS):
+```bash
+cd modules/lern/service/target
+unzip lern-service-impl-1.0-SNAPSHOT-dist.zip
+cd lern-service-impl-1.0-SNAPSHOT
+./start -Dhttp.port=9000
+```
+
+### Step 6 — Verify
+```bash
+curl http://localhost:9000/health
+```
+Expected response:
+```json
+{
+  "id": "api.all.health",
+  "ver": "health",
+  "params": { "status": "SUCCESS", "err": null },
+  "responseCode": "OK",
+  "result": {
+    "response": {
+      "checks": [
+        { "name": "Learner service", "healthy": true },
+        { "name": "Actor service", "healthy": true },
+        { "name": "Cassandra service", "healthy": true },
+        { "name": "Elastic search service", "healthy": true }
+      ],
+      "healthy": true,
+      "name": "Complete health check api"
+    }
+  }
+}
+```
+
+---
+
+## Optional Features
+
+### Redis Caching
+Redis is optional and disabled by default. To enable it, set the following environment variables:
+
+```bash
+export sunbird_redis_host=localhost
+export sunbird_redis_port=6379
+```
+
+Then change `redis.enabled` from `false` to `true` in [modules/lern/service/conf/application.conf](modules/lern/service/conf/application.conf):
+
+```
+redis.enabled = true
+```
+
+This config key cannot be set via an environment variable (dots are invalid in bash variable names), so the application.conf edit is required.
+
+### Cloud Storage Configuration
+
+Lern requires cloud storage for certificates, user artifacts, and content objects. Configure one of the following providers before deployment.
+
+> For local development, set `sunbird_cloud_storage_auth_type=ACCESS_KEY` and provide the account key. The default auth type is `OIDC` (Kubernetes Workload Identity) which does not require a key but is only applicable in a Kubernetes environment.
+
+#### Azure Blob Storage (Default)
+```bash
+export sunbird_cloud_service_provider=azure
+export sunbird_cloud_storage_auth_type=ACCESS_KEY
+export sunbird_account_name=your-account-name
+export sunbird_account_key=your-account-key
+export sunbird_content_cloud_storage_container=your-container-name
+```
+
+#### AWS S3
+```bash
+export sunbird_cloud_service_provider=aws
+export sunbird_cloud_storage_auth_type=ACCESS_KEY
+export sunbird_account_name=your-access-key-id
+export sunbird_account_key=your-secret-access-key
+export sunbird_content_cloud_storage_container=your-s3-bucket-name
+```
+
+#### Google Cloud Storage
+```bash
+export sunbird_cloud_service_provider=gcloud
+export sunbird_cloud_storage_auth_type=ACCESS_KEY
+export sunbird_account_name=your-client-email
+export sunbird_account_key=/path/to/key.json
+export sunbird_content_cloud_storage_container=your-gcs-bucket-name
+```
 
 ---
 
 ## System Dependencies & External Integrations
 
-To operate at scale, Sunbird Lern requires integration with several infrastructure components and ecosystem services. These are typically configured via environment variables.
+Lern integrates with the following external systems, configured via environment variables (see `scripts/env-variables.example`):
 
-For a comprehensive list of required configuration keys and a shell-compatible template, please refer to:
-**[Environment Variables Template (scripts/env-variables.example)](scripts/env-variables.example)**
-
-### Infrastructure Components
-*   **Primary Persistence:** 
-    *   **YugabyteDB:** Distributed SQL database (accessed via Cassandra drivers on port 9042 and Postgres drivers on port 5433).
-    *   **Elasticsearch:** Distributed search engine (default port 9200) for indexing and discovery.
-*   **Message Broker:** **Apache Kafka** (default port 9092) for asynchronous event processing, telemetry, and certificate issuance requests.
-*   **Identity Provider:** **Keycloak** (SSO) for secure authentication and token management.
-*   **Object Storage:** **Cloud Storage** (Azure Blob Storage, AWS S3, GCP, or OCI) for storing assets, dials, and certificates.
-*   **Caching:** **Redis** (Optional) for performance optimization.
-*   **Communication:** **SMTP Server** (e.g., SendGrid) for dispatching email notifications.
-
-### Ecosystem Dependencies
-The service interacts with several other Sunbird platform components:
-*   **Content & Learning Services:** For course and content metadata retrieval.
-*   **Search Service:** For advanced cross-component search capabilities.
-*   **Certificate & Dial Services:** For credential management and QR code orchestration.
-*   **Telemetry Service:** For platform-wide usage analytics and observation.
-
----
-
-## Getting Started
-
-### Prerequisites
-*   JDK 11
-*   Maven 3.6.0+
-*   Docker (Optional, for containerized deployment)
-
-### Developer Quick Reference
-
-| Objective | Command |
-| :--- | :--- |
-| **Standard Build** | `./scripts/build-local.sh --service lern` |
-| **Clean Install** | `mvn clean install -P lern -DskipTests` |
-| **Local Execution** | `mvn play2:run` (Execute within `modules/lern/service`) |
-| **Packaging** | `mvn play2:dist` |
-
-For exhaustive technical documentation, build parameters, and deployment strategies, please consult the:
-**[Official Build & Deployment Guide](scripts/README.md)**
-
----
-
-## Project Structure
-
-The repository is organized into four main functional areas:
-
-### Core (/core)
-The foundation of the platform, containing shared libraries and data access adapters:
-*   `sunbird-actor-utils`: Common abstractions for Pekko/Akka Actor management.
-*   `sunbird-cassandra-utils`: Data access layer for YugabyteDB/Cassandra.
-*   `sunbird-es-utils`: Integration layer for Elasticsearch indexing and search.
-*   `sunbird-redis-utils`: Caching utilities for Redis.
-*   `sunbird-platform-common`: Shared utility classes, exception handling, and telemetry.
-
-### Modules (/modules)
-Independent functional components and the unified service implementation:
-*   `lern/`: The **Unified Service** that merges all functionalities into a single deployable unit.
-*   `lms/`: Learning Management System logic, including course batches and enrollment.
-*   `userorg/`: Identity and Organization management services.
-*   `notification/`: Notification engine and template management.
-
-### Build & Deployment (/build, /scripts)
-Resources for automation and containerization:
-*   `build/`: Service-specific **Dockerfiles** and environment configurations.
-*   `scripts/`: Centralized orchestration for builds, tests, and Docker image generation.
-
-### Reporting
-*   `lern-jacoco-report/`: Consolidated code coverage reports across all modules.
+*   **Primary Data Store:** YugabyteDB with dual-driver support (Cassandra for document-oriented workloads, Postgres for relational).
+*   **Search & Analytics:** Elasticsearch (9200) for full-text indexing and aggregated queries.
+*   **Event Streaming:** Apache Kafka (9092) for asynchronous notifications, certificate issuance, and audit trails.
+*   **Caching Layer:** Redis (optional, 6379) for session storage and query result caching.
+*   **Identity Provider:** Keycloak for OIDC/SAML federation and secure authentication.
+*   **Email Transport:** SMTP server for transactional email delivery.
+*   **Cloud Storage:** Azure Blob Storage, AWS S3, or Google Cloud Storage for content, certificates, and artifacts.
+*   **Knowlg & Search Service:** Lern depends on the Knowlg knowledge platform for content reads and search. Refer to the [Sunbird Knowlg — knowledge-platform](https://github.com/Sunbird-Knowlg/knowledge-platform) repository for setup instructions.
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**. For more information, please see the [LICENSE](LICENSE) file.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.

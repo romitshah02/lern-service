@@ -4,24 +4,24 @@
 #########################################
 # 1. General Environment Settings
 #########################################
-export ENV_NAME="test"
-export SUNBIRD_ENVIRONMENT="test"
-export SUNBIRD_INSTANCE="test"
-export SUNBIRD_INSTALLATION="test"
-export SUNBIRD_INSTALLATION_DISPLAY_NAME="sunbird test"
+export ENV_NAME="dev"
+export SUNBIRD_ENVIRONMENT="dev"
+export SUNBIRD_INSTANCE="dev"
+export SUNBIRD_INSTALLATION="dev"
+export SUNBIRD_INSTALLATION_DISPLAY_NAME="sunbird dev"
 export SUNBIRD_INSTALLATION_DISPLAY_NAME_FOR_SMS="Sunbird"
 export SUNBIRD_INSTALLATION_EMAIL=""
 export SUNBIRD_APP_NAME="sunbird"
 export SUNBIRD_TIME_ZONE="Asia/Kolkata"
 export SUNBIRD_DEFAULT_CHANNEL="sunbird"
-export SUNBIRD_WEB_URL="https://test.sunbirded.org/"
+export SUNBIRD_WEB_URL="https://dev.sunbirded.org/"
 export SUNBIRD_ENV_LOGO_URL=""
 
 #########################################
 # 2. Service Ports & Hostnames
 #########################################
 export LEARNER_SERVICE_PORT="http://localhost:9000"
-export PORTAL_SERVICE_PORT="http://player:3000"
+export PORTAL_SERVICE_PORT="http://localhost:3000"
 export BIND_HOSTNAME="0.0.0.0"
 export ACTOR_HOSTNAME="actor-service"
 export SUNBIRD_MW_SYSTEM_HOST="localhost"
@@ -30,12 +30,12 @@ export SUNBIRD_MW_SYSTEM_PORT="8088"
 #########################################
 # 3. Persistence: YugabyteDB / Cassandra
 #########################################
-export SUNBIRD_CASSANDRA_HOST="yb-tserver-service"
+export SUNBIRD_CASSANDRA_HOST="localhost"
 export SUNBIRD_CASSANDRA_PORT="9042"
 export SUNBIRD_CASSANDRA_KEYSPACE="sunbird"
 export SUNBIRD_CASSANDRA_NOTIFICATION_KEYSPACE="sunbird_notifications"
 export SUNBIRD_COURSE_KEYSPACE="sunbird_courses"
-export HIERARCHY_STORE_KEYSPACE="test_hierarchy_store"
+export HIERARCHY_STORE_KEYSPACE="dev_hierarchy_store"
 export HIERARCHY_RELATIONS_TABLE="hierarchy_relations"
 export SUNBIRD_CASSANDRA_USERNAME=""
 export SUNBIRD_CASSANDRA_PASSWORD=""
@@ -44,7 +44,7 @@ export ISMULTIDCENABLED="false"
 #########################################
 # 4. Persistence: YugabyteDB / Postgres
 #########################################
-export SUNBIRD_POSTGRES_HOST="yb-tserver-service"
+export SUNBIRD_POSTGRES_HOST="localhost"
 export SUNBIRD_POSTGRES_PORT="5433"
 export SUNBIRD_POSTGRES_DB="sunbird"
 export SUNBIRD_POSTGRES_USERNAME="yugabyte"
@@ -53,40 +53,41 @@ export SUNBIRD_POSTGRES_PASSWORD="<POSTGRES_PASSWORD>"
 #########################################
 # 5. Search: Elasticsearch
 #########################################
-export SUNBIRD_ES_HOST="elasticsearch"
-export SUNBIRD_ES_PORT="9200"
+export sunbird_es_host="localhost"
+export sunbird_es_port="9200"
+export sunbird_es_cluster="sunbird"
 export USER_INDEX_ALIAS="user_alias"
 export ORG_INDEX_ALIAS="org_alias"
 
 #########################################
 # 6. Message Broker: Apache Kafka
 #########################################
-export SUNBIRD_KAFKA_URL="kafka:9092"
-export KAFKA_URLS="kafka:9092"
-export SUNBIRD_NOTIFICATION_KAFKA_SERVERS_CONFIG="kafka:9092"
+export SUNBIRD_KAFKA_URL="localhost:9092"
+export KAFKA_URLS="localhost:9092"
+export SUNBIRD_NOTIFICATION_KAFKA_SERVERS_CONFIG="localhost:9092"
 
 # Kafka Topics
-export KAFKA_ASSESSMENT_TOPIC="test.telemetry.assess"
-export KAFKA_ENROLMENT_SYNC_TOPIC="test.batch.enrolment.sync.request"
-export KAFKA_TOPICS_CERTIFICATE_INSTRUCTION="test.issue.certificate.request"
-export KAFKA_TOPICS_CONTENTSTATE_INVALID="test.contentstate.invalid"
-export KAFKA_TOPICS_INSTRUCTION="test.coursebatch.job.request"
-export SUNBIRD_NOTIFICATION_KAFKA_TOPIC="test.lms.notification"
-export SUNBIRD_USER_CERT_KAFKA_TOPIC="test.lms.user.account.merge"
-export "user-deletion-broadcast-topic"="test.delete.user"
+export KAFKA_ASSESSMENT_TOPIC="dev.telemetry.assess"
+export KAFKA_ENROLMENT_SYNC_TOPIC="dev.batch.enrolment.sync.request"
+export KAFKA_TOPICS_CERTIFICATE_INSTRUCTION="dev.issue.certificate.request"
+export KAFKA_TOPICS_CONTENTSTATE_INVALID="dev.contentstate.invalid"
+export KAFKA_TOPICS_INSTRUCTION="dev.coursebatch.job.request"
+export SUNBIRD_NOTIFICATION_KAFKA_TOPIC="dev.lms.notification"
+export SUNBIRD_USER_CERT_KAFKA_TOPIC="dev.lms.user.account.merge"
+export USER_DELETION_BROADCAST_TOPIC="dev.delete.user"
 
 #########################################
 # 7. Identity Provider: Keycloak / SSO
 #########################################
-export SUNBIRD_SSO_URL="https://test.sunbirded.org/auth/"
+export SUNBIRD_SSO_URL="https://dev.sunbirded.org/auth/"
 export SUNBIRD_SSO_REALM="sunbird"
 export SUNBIRD_SSO_CLIENT_ID="lms"
 export SUNBIRD_SSO_CLIENT_SECRET="<CLIENT_SECRET>"
 export SUNBIRD_SSO_USERNAME="admin"
 export SUNBIRD_SSO_PASSWORD="<SSO_PASSWORD>"
-export SUNBIRD_SSO_LB_IP="http://keycloak:8080/"
+export SUNBIRD_SSO_LB_IP="http://localhost:8080/"
 export SUNBIRD_SUBDOMAIN_KEYCLOAK_BASE_URL="/"
-export "accesstoken.publickey.basepath"="/keys/"
+export ACCESSTOKEN_PUBLICKEY_BASEPATH="/keys/"
 export SUNBIRD_KEYCLOAK_USER_FEDERATION_PROVIDER_ID="cassandrafederationid"
 export SUNBIRD_KEYCLOAK_REQUIRED_ACTION_LINK_EXPIRATION_SECONDS=""
 
@@ -113,23 +114,16 @@ export SUNBIRD_ANALYTICS_BLOB_ACCOUNT_KEY="<ANALYTICS_ACCOUNT_KEY>"
 export NOTIFICATION_SERVICE_BASE_URL="http://localhost:9000"
 export SUNBIRD_USER_ORG_API_BASE_URL="http://localhost:9000"
 export SUNBIRD_USER_SERVICE_API_BASE_URL="http://localhost:9000"
-export SUNBIRD_API_BASE_URL="http://knowledge-mw-service:5000"
-export SUNBIRD_API_MGR_BASE_URL="http://knowledge-mw-service:5000"
-export SUNBIRD_CS_BASE_URL="http://knowledge-mw-service:5000"
-export SERVICE_SEARCH_BASE_PATH="http://search-service:9000"
-export SUNBIRD_SEARCH_SERVICE_API_BASE_URL="http://search-service:9000"
-export CONTENT_SERVICE_BASE_URL="http://knowlg-service:9000"
-export SUNBIRD_CONTENT_SERVICE_API_BASE_URL="http://knowlg-service:9000"
-export LEARNING_SERVICE_BASE_URL="http://learning-service:8080"
-export EKSTEP_API_BASE_URL="http://learning-service:8080"
-export SUNBIRD_CERT_SERVICE_BASE_URL="http://cert-service:9000"
-export SUNBIRD_DIAL_SERVICE_BASE_URL="http://dial-service:9000"
-export SUNBIRD_GROUP_SERVICE_API_BASE_URL="http://groups-service:9000"
-export SUNBIRD_TELEMETRY_BASE_URL="http://telemetry-service:9001"
-export SUNBIRD_ANALYTICS_API_BASE_URL="http://analytics-service:9000"
+export SUNBIRD_API_BASE_URL="http://localhost:5000"
+export SUNBIRD_API_MGR_BASE_URL="http://localhost:5000"
+export SUNBIRD_CS_BASE_URL="http://localhost:5000"
+export SERVICE_SEARCH_BASE_PATH="http://localhost:9000"
+export SUNBIRD_SEARCH_SERVICE_API_BASE_URL="http://localhost:9000"
+export CONTENT_SERVICE_BASE_URL="http://localhost:9000"
+export SUNBIRD_CONTENT_SERVICE_API_BASE_URL="http://localhost:9000"
+export SUNBIRD_DIAL_SERVICE_BASE_URL="http://localhost:9000"
+export SUNBIRD_TELEMETRY_BASE_URL="http://localhost:9001"
 export SUNBIRD_REGISTRY_SERVICE_BASEURL="http://registry-service:8081"
-export SUNBIRD_BADGER_BASEURL="http://badger:8004"
-export CONTENT_READ_URL=""
 export SUNBIRD_CS_SEARCH_PATH="/v1/content/search"
 export SUNBIRD_DIAL_SERVICE_SEARCH_URL="/dialcode/v3/search"
 export SUNBIRD_US_ORG_READ_URL="/v1/org/read"
@@ -163,6 +157,8 @@ export SUNBIRD_AUTHORIZATION="Bearer <SUNBIRD_TOKEN>"
 # Cache Settings
 export SUNBIRD_CACHE_ENABLE="false"
 export REDIS_ENABLED="false"
+export sunbird_redis_host="localhost"
+export sunbird_redis_port="6379"
 export LEARNER_IN_MEMORY_CACHE_TTL="300"
 export USERORG_IN_MEMORY_CACHE_TTL="600"
 export USER_ENROLMENTS_RESPONSE_CACHE_ENABLE="false"
@@ -177,7 +173,6 @@ export ASSESSMENT_DIRECT_AGGREGATION_ENABLED="true"
 export ENABLE_ACTIVITY_AGGREGATOR_ACTOR="true"
 export ENABLE_MODULE_AGGREGATION="true"
 export ACTIVITY_INPUT_DEDUP_ENABLED="false"
-export "learning.content.props.to.add"="mimeType,contentType,name,code,description,keywords,framework,copyright,topic"
 
 # User Management Rules
 export LIMIT_MANAGED_USER_CREATION="true"
@@ -214,7 +209,7 @@ export SUNBIRD_URL_SHORTNER_ACCESS_TOKEN=""
 #########################################
 # 13. Telemetry & Observation
 #########################################
-export TELEMETRY_PDATA_ID="test.sunbird.learning.service"
+export TELEMETRY_PDATA_ID="dev.sunbird.learning.service"
 export TELEMETRY_PDATA_PID="lern-service"
 export TELEMETRY_QUEUE_THRESHOLD_VALUE="100"
 export SUNBIRD_USER_SEARCH_CRETORDETAILS_FIELDS="id,firstName,lastName"
